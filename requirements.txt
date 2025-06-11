@@ -79,3 +79,5 @@ speechrecognition==3.10.0
 pyttsx3==2.90
 opencv-python==4.8.0.76
 
+# Utilitários assíncronos
+aiofiles==23.2.1
