@@ -504,3 +504,24 @@ async def health_check():
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
+from apscheduler.schedulers.background import BackgroundScheduler
+import time
+
+def follow_up_pending_payments():
+    try:
+        payments = orchestrator.supabase.table("payments").select("*").eq("status", "pending").execute()
+        for payment in payments.data:
+            created_time = datetime.fromisoformat(payment["created_at"])
+            if (datetime.now() - created_time).total_seconds() > 3600:  # 1 hora
+                phone = payment["phone"]
+                url = payment["checkout_url"]
+                msg = f"Olá! 🌟 Notamos que você iniciou um pagamento na Crânios mas não finalizou. Caso precise, seu link está aqui: {url}"
+                orchestrator.evolution_api.send_message(phone, msg)
+    except Exception as e:
+        logger.error(f"Erro no follow-up: {e}")
+
+# Inicia o agendador
+scheduler = BackgroundScheduler()
+scheduler.add_job(follow_up_pending_payments, "interval", minutes=60)
+scheduler.start()
