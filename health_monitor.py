@@ -1,4 +1,3 @@
-23-Monitor de Saúde do Sistema
 # health_monitor.py
 import asyncio
 import aiohttp
