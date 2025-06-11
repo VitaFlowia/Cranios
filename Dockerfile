@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     netcat-openbsd \
     portaudio19-dev \
     libffi-dev \
+    libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Cria diretório de trabalho
