@@ -7,6 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Instala dependências do sistema
 RUN apt-get update && apt-get install -y \
+    espeak \
     gcc \
     g++ \
     libpq-dev \
