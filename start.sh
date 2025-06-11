@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Espera por variáveis de ambiente críticas (opcionalmente adicione validações aqui)
+
+# Inicializa o app FastAPI com Gunicorn
+exec gunicorn main_application:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:5678
+
 # Script de inicialização da aplicação Crânios
 echo "🚀 Iniciando aplicação Crânios..."
 
