@@ -1,5 +1,3 @@
-12-start.sh
-
 #!/bin/bash
 
 # Script de inicialização da aplicação Crânios
