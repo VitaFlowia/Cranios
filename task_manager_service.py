@@ -1,4 +1,3 @@
-04-Task Manager Service
 """
 Task Manager Service - Crânios
 Gerenciador automático de tarefas e cronogramas
