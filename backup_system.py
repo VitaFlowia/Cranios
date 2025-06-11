@@ -1,5 +1,3 @@
-24-Sisetma de Backup Automático
-
 # backup_system.py
 import os
 import asyncio
