@@ -76,3 +76,5 @@ flake8==6.1.0
 
 # Voz e reconhecimento de fala
 speechrecognition==3.10.0
+pyttsx3==2.90
+
