@@ -15,12 +15,16 @@ import asyncio
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class FinancialManager:
+cclass FinancialManager:
     def __init__(self, supabase_client):
         self.supabase = supabase_client
+        self.evolution_api_url = os.getenv("EVOLUTION_API_URL")
+        self.evolution_api_key = os.getenv("EVOLUTION_API_KEY")
+        self.pix_api_url = os.getenv("PIX_API_URL")
+        self.pix_api_key = os.getenv("PIX_API_KEY")
         
         # Inicializar cliente
-        self.supabase: Client = create_client(self.supabase_url, self.supabase_key)
+      
     
     async def create_receivable(self, contract_data: Dict) -> Dict[str, Any]:
         """Cria conta a receber baseada no contrato"""
