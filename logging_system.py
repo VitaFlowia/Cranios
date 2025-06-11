@@ -1,5 +1,3 @@
-26-Sistema de Configuração
-
 # logging_system.py
 import logging
 import logging.handlers
