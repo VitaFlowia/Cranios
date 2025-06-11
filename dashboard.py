@@ -1,5 +1,3 @@
-18-dashboard
-
 """
 Sistema de Dashboard Executivo - Completo
 Dashboard em tempo real com métricas de negócio
