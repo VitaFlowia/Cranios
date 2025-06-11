@@ -1,4 +1,3 @@
-06-Drive Integration Service
 """
 Drive Integration Service - Crânios
 Integração com Google Drive para base de conhecimento
