@@ -1,5 +1,3 @@
-14-setup.database.py 
-
 """
 Setup inicial do banco de dados Crânios
 Cria todas as tabelas e dados iniciais necessários
