@@ -16,6 +16,8 @@ RUN apt-get update && apt-get install -y \
     wkhtmltopdf \
     xvfb \
     netcat-openbsd \
+    portaudio19-dev \
+    libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Cria diretório de trabalho
