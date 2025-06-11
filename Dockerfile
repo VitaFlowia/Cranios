@@ -1,5 +1,3 @@
-10-Dockerfile
-
 FROM python:3.11-slim
 
 # Define variáveis de ambiente
