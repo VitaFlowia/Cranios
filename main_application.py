@@ -16,12 +16,12 @@ import uvicorn
 
 # Imports dos serviços
 from ai_processor_service import AIProcessor
-from proposal_generator import ProposalGenerator
-from contract_manager import ContractManager
-from task_manager import TaskManager
-from financial_manager import FinancialManager
-from drive_integration import DriveKnowledgeBase
-from evolution_api import EvolutionAPIService
+from proposal_generator_service import ProposalGenerator
+from contract_manager_service import ContractManager
+from task_manager_service import TaskManager
+from financial_manager_service import FinancialManager
+from drive_integration_service import DriveKnowledgeBase
+from evolution_api_service import EvolutionAPIService
 from supabase import create_client, Client
 
 logging.basicConfig(level=logging.INFO)
