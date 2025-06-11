@@ -1,4 +1,3 @@
-03-Contract Manager Service - Autentique
 """
 Contract Manager Service - Crânios
 Gerenciador automático de contratos e assinaturas digitais
