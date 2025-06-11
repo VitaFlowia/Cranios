@@ -15,7 +15,7 @@ from fastapi.responses import JSONResponse
 import uvicorn
 
 # Imports dos serviços
-from ai_processor import AIProcessor
+from ai_processor_service import AIProcessor
 from proposal_generator import ProposalGenerator
 from contract_manager import ContractManager
 from task_manager import TaskManager
