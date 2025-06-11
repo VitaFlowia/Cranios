@@ -19,7 +19,7 @@ python-multipart==0.0.6
 
 # WhatsApp e comunicação
 requests==2.31.0
-httpx==0.25.2
+httpx==0.24.1
 websockets==12.0
 
 # PDF e documentos
