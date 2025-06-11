@@ -1,5 +1,3 @@
-05-Financial Manager Service
-
 """
 Financial Manager Service - Crânios
 Gerenciador automático de financeiro e pagamentos
