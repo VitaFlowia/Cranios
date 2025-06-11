@@ -16,11 +16,10 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class EvolutionAPIService:
-    def __init__(self):
-        # Configurações da Evolution API
-        self.base_url = os.getenv('EVOLUTION_API_URL', 'http://localhost:8080')
-        self.api_key = os.getenv('EVOLUTION_API_KEY')
-        self.instance_name = os.getenv('EVOLUTION_INSTANCE_NAME', 'cranios')
+    def __init__(self, api_url, api_key, instance_name="cranios"):
+        self.base_url = api_url
+        self.api_key = api_key
+        self.instance_name = instance_name
         
         # Headers padrão
         self.headers = {
