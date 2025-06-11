@@ -1,4 +1,3 @@
-07-Evolution API Service 
 """
 Evolution API Service - Crânios
 Integração completa com WhatsApp via Evolution API
