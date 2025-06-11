@@ -65,7 +65,7 @@ class CraniosOrchestrator:
     def setup_environment(self):
         """Configuração das variáveis de ambiente"""
         self.supabase_url = os.getenv("SUPABASE_URL")
-        self.supabase_key = os.getenv("SUPABASE_KEY")
+        self.supabase_key = os.getenv("SUPABASE_ANON_KEY")
         self.evolution_api_url = os.getenv("EVOLUTION_API_URL")
         self.evolution_api_key = os.getenv("EVOLUTION_API_KEY")
         self.arcee_api_key = os.getenv("ARCEE_API_KEY")
