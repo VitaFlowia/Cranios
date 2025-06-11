@@ -1,0 +1,77 @@
+11-Requiriments
+
+# FastAPI e servidor
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+gunicorn==21.2.0
+
+# Banco de dados
+supabase==2.0.2
+psycopg2-binary==2.9.7
+sqlalchemy==2.0.23
+
+# Cache e filas
+redis==5.0.1
+celery==5.3.4
+
+# IA e processamento
+openai==1.3.6
+langchain==0.0.350
+python-multipart==0.0.6
+
+# WhatsApp e comunicação
+requests==2.31.0
+httpx==0.25.2
+websockets==12.0
+
+# PDF e documentos
+jinja2==3.1.2
+pdfkit==1.0.0
+reportlab==4.0.7
+python-docx==1.1.0
+
+# Google Drive
+google-api-python-client==2.108.0
+google-auth-httplib2==0.1.1
+google-auth-oauthlib==1.1.0
+
+# Assinatura digital e pagamentos
+cryptography==41.0.7
+pyjwt==2.8.0
+
+# Utilitários
+python-decouple==3.8
+python-dateutil==2.8.2
+pytz==2023.3
+uuid==1.30
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Logging e monitoramento
+loguru==0.7.2
+sentry-sdk[fastapi]==1.38.0
+
+# Validação e formatação
+email-validator==2.1.0
+phonenumbers==8.13.25
+
+# Processamento de texto
+unidecode==1.3.7
+nltk==3.8.1
+
+# Agendamento
+apscheduler==3.10.4
+
+# Manipulação de arquivos
+openpyxl==3.1.2
+pandas==2.1.3
+
+# Segurança
+bcrypt==4.1.2
+passlib==1.7.4
+
+# Desenvolvimento
+pytest==7.4.3
+pytest-asyncio==0.21.1
+black==23.11.0
+flake8==6.1.0

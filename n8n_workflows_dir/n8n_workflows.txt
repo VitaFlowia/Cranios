@@ -1,0 +1,339 @@
+17-n8n_Workflows
+
+{
+  "conversational_agent_flow.json": {
+    "name": "Agente Conversacional Ana 2.0",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "webhook-whatsapp",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "id": "webhook-whatsapp",
+        "name": "Webhook WhatsApp",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 1,
+        "position": [200, 300]
+      },
+      {
+        "parameters": {
+          "functionCode": "// Extrai dados da mensagem do WhatsApp\nconst message = items[0].json;\nconst phone = message.data.key.remoteJid.replace('@s.whatsapp.net', '');\nconst text = message.data.message?.conversation || message.data.message?.extendedTextMessage?.text || '';\nconst senderName = message.data.pushName || 'Cliente';\n\nreturn [{\n  json: {\n    phone: phone,\n    message: text,\n    senderName: senderName,\n    timestamp: new Date().toISOString()\n  }\n}];"
+        },
+        "id": "extract-message",
+        "name": "Extrair Mensagem",
+        "type": "n8n-nodes-base.function",
+        "typeVersion": 1,
+        "position": [400, 300]
+      },
+      {
+        "parameters": {
+          "resource": "rows",
+          "operation": "getAll",
+          "tableId": "conversations",
+          "returnAll": true,
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "phone",
+                "operator": "eq",
+                "keyValue": "={{ $json.phone }}"
+              }
+            ]
+          }
+        },
+        "id": "buscar-conversa",
+        "name": "Buscar Conversa Existente",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [600, 300]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "boolean": [
+              {
+                "value1": "={{ $json.length }}",
+                "operation": "equal",
+                "value2": 0
+              }
+            ]
+          }
+        },
+        "id": "nova-conversa",
+        "name": "É Nova Conversa?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [800, 300]
+      },
+      {
+        "parameters": {
+          "resource": "rows",
+          "operation": "create",
+          "tableId": "conversations",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldId": "phone",
+                "fieldValue": "={{ $('Extrair Mensagem').item.json.phone }}"
+              },
+              {
+                "fieldId": "name",
+                "fieldValue": "={{ $('Extrair Mensagem').item.json.senderName }}"
+              },
+              {
+                "fieldId": "status",
+                "fieldValue": "active"
+              },
+              {
+                "fieldId": "context",
+                "fieldValue": "{\"stage\": \"greeting\", \"message_count\": 1}"
+              }
+            ]
+          }
+        },
+        "id": "criar-conversa",
+        "name": "Criar Nova Conversa",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [1000, 200]
+      },
+      {
+        "parameters": {
+          "resource": "rows",
+          "operation": "update",
+          "tableId": "conversations",
+          "fieldsUi": {
+            "fieldValues": [
+              {
+                "fieldId": "updated_at",
+                "fieldValue": "={{ new Date().toISOString() }}"
+              },
+              {
+                "fieldId": "context",
+                "fieldValue": "={{ JSON.stringify({...JSON.parse($json.context || '{}'), message_count: (JSON.parse($json.context || '{}').message_count || 0) + 1}) }}"
+              }
+            ]
+          },
+          "filters": {
+            "conditions": [
+              {
+                "keyName": "phone",
+                "operator": "eq",
+                "keyValue": "={{ $('Extrair Mensagem').item.json.phone }}"
+              }
+            ]
+          }
+        },
+        "id": "atualizar-conversa",
+        "name": "Atualizar Conversa Existente",
+        "type": "n8n-nodes-base.supabase",
+        "typeVersion": 1,
+        "position": [1000, 400]
+      },
+      {
+        "parameters": {
+          "url": "http://localhost:8000/api/ai/process-message",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"message\": $('Extrair Mensagem').item.json.message,\n  \"phone\": $('Extrair Mensagem').item.json.phone,\n  \"context\": JSON.parse($json.context || '{}'),\n  \"sender_name\": $('Extrair Mensagem').item.json.senderName\n} }}",
+          "options": {
+            "timeout": 30000
+          }
+        },
+        "id": "processar-ia",
+        "name": "Processar com IA",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3,
+        "position": [1200, 300]
+      },
+      {
+        "parameters": {
+          "url": "{{ $env.EVOLUTION_API_URL }}/sendText/{{ $env.EVOLUTION_INSTANCE }}",
+          "sendHeaders": true,
+          "specifyHeaders": "json",
+          "jsonHeaders": "={{ {\n  \"apikey\": $env.EVOLUTION_API_KEY,\n  \"Content-Type\": \"application/json\"\n} }}",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"number\": $('Extrair Mensagem').item.json.phone,\n  \"text\": $json.response\n} }}",
+          "options": {}
+        },
+        "id": "enviar-resposta",
+        "name": "Enviar Resposta WhatsApp",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3,
+        "position": [1400, 300]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "boolean": [
+              {
+                "value1": "={{ $json.action }}",
+                "operation": "equal",
+                "value2": "generate_proposal"
+              }
+            ]
+          }
+        },
+        "id": "verificar-acao",
+        "name": "Need Proposal?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [1600, 300]
+      },
+      {
+        "parameters": {
+          "url": "http://localhost:8000/api/proposals/generate",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ {\n  \"phone\": $('Extrair Mensagem').item.json.phone,\n  \"lead_data\": $('Processar com IA').item.json.lead_data\n} }}",
+          "options": {}
+        },
+        "id": "gerar-proposta",
+        "name": "Gerar Proposta",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 3,
+        "position": [1800, 200]
+      },
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ {\n  \"status\": \"success\",\n  \"message\": \"Mensagem processada com sucesso\",\n  \"timestamp\": new Date().toISOString()\n} }}"
+        },
+        "id": "resposta-webhook",
+        "name": "Resposta Webhook",
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1,
+        "position": [2000, 300]
+      }
+    ],
+    "connections": {
+      "Webhook WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "Extrair Mensagem",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extrair Mensagem": {
+        "main": [
+          [
+            {
+              "node": "Buscar Conversa Existente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Buscar Conversa Existente": {
+        "main": [
+          [
+            {
+              "node": "É Nova Conversa?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "É Nova Conversa?": {
+        "main": [
+          [
+            {
+              "node": "Criar Nova Conversa",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Atualizar Conversa Existente",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Criar Nova Conversa": {
+        "main": [
+          [
+            {
+              "node": "Processar com IA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Atualizar Conversa Existente": {
+        "main": [
+          [
+            {
+              "node": "Processar com IA",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Processar com IA": {
+        "main": [
+          [
+            {
+              "node": "Enviar Resposta WhatsApp",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Enviar Resposta WhatsApp": {
+        "main": [
+          [
+            {
+              "node": "Need Proposal?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Need Proposal?": {
+        "main": [
+          [
+            {
+              "node": "Gerar Proposta",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Resposta Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gerar Proposta": {
+        "main": [
+          [
+            {
+              "node": "Resposta Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    }
+  }
+}

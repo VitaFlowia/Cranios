@@ -1,0 +1,568 @@
+19-Dashboard Executivo HTML - Interativo
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Executivo - Crânios</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header .subtitle {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .metric-card h3 {
+            color: #2c3e50;
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 15px;
+        }
+
+        .metric-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .metric-change {
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .positive {
+            background: rgba(46, 204, 113, 0.1);
+            color: #27ae60;
+        }
+
+        .negative {
+            background: rgba(231, 76, 60, 0.1);
+            color: #e74c3c;
+        }
+
+        .neutral {
+            background: rgba(149, 165, 166, 0.1);
+            color: #95a5a6;
+        }
+
+        .charts-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .alerts-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .alert-item {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            border-left: 4px solid;
+        }
+
+        .alert-warning {
+            background: rgba(241, 196, 15, 0.1);
+            border-color: #f39c12;
+            color: #d68910;
+        }
+
+        .alert-error {
+            background: rgba(231, 76, 60, 0.1);
+            border-color: #e74c3c;
+            color: #c0392b;
+        }
+
+        .alert-info {
+            background: rgba(52, 152, 219, 0.1);
+            border-color: #3498db;
+            color: #2980b9;
+        }
+
+        .recent-activity {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-item {
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-time {
+            color: #7f8c8d;
+            font-size: 12px;
+        }
+
+        .activity-description {
+            color: #2c3e50;
+            font-weight: 500;
+            margin-top: 5px;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-online {
+            background: #27ae60;
+        }
+
+        .status-offline {
+            background: #e74c3c;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+        }
+
+        @media (max-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Dashboard Executivo - Crânios</h1>
+            <p class="subtitle">Monitoramento em tempo real da sua agência de automação</p>
+            <div style="float: right; margin-top: -40px;">
+                <span class="status-indicator status-online"></span>
+                <span style="font-size: 14px; color: #7f8c8d;">Sistema Online</span>
+                <span id="lastUpdate" style="margin-left: 20px; font-size: 12px; color: #95a5a6;"></span>
+            </div>
+        </div>
+
+        <div id="alertsSection" class="alerts-section" style="display: none;">
+            <h3 style="color: #2c3e50; margin-bottom: 15px;">🚨 Alertas do Sistema</h3>
+            <div id="alertsList"></div>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <h3>Conversas Hoje</h3>
+                <div class="metric-value" id="conversasHoje">-</div>
+                <div class="metric-change neutral" id="conversasChange">Carregando...</div>
+            </div>
+            <div class="metric-card">
+                <h3>Leads Gerados</h3>
+                <div class="metric-value" id="leadsHoje">-</div>
+                <div class="metric-change neutral" id="leadsChange">Carregando...</div>
+            </div>
+            <div class="metric-card">
+                <h3>Taxa de Conversão</h3>
+                <div class="metric-value" id="taxaConversao">-</div>
+                <div class="metric-change neutral" id="conversaoChange">Este mês</div>
+            </div>
+            <div class="metric-card">
+                <h3>Receita Mensal</h3>
+                <div class="metric-value" id="receitaMensal">R$ -</div>
+                <div class="metric-change neutral" id="receitaChange">Carregando...</div>
+            </div>
+            <div class="metric-card">
+                <h3>Propostas Enviadas</h3>
+                <div class="metric-value" id="propostasEnviadas">-</div>
+                <div class="metric-change neutral">Hoje</div>
+            </div>
+            <div class="metric-card">
+                <h3>Contratos Assinados</h3>
+                <div class="metric-value" id="contratosAssinados">-</div>
+                <div class="metric-change neutral">Hoje</div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="chart-container">
+                <h3 class="chart-title">Conversas vs Leads - Últimos 7 dias</h3>
+                <canvas id="conversasChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3 class="chart-title">Pipeline de Vendas</h3>
+                <canvas id="pipelineChart"></canvas>
+            </div>
+        </div>
+
+        <div class="recent-activity">
+            <h3 style="color: #2c3e50; margin-bottom: 20px;">📋 Atividade Recente</h3>
+            <div id="recentActivity">
+                <div class="loading">Carregando atividades...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DashboardApp {
+            constructor() {
+                this.ws = null;
+                this.charts = {};
+                this.mockData = true; // Para demonstração
+                this.connect();
+                this.initCharts();
+                this.startDataSimulation();
+            }
+
+            connect() {
+                if (!this.mockData) {
+                    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const wsUrl = `${protocol}//${window.location.host}/ws/dashboard`;
+                    
+                    this.ws = new WebSocket(wsUrl);
+                    
+                    this.ws.onopen = () => {
+                        console.log('Conectado ao dashboard em tempo real');
+                        this.updateStatus('online');
+                    };
+                    
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.handleMessage(data);
+                    };
+                    
+                    this.ws.onclose = () => {
+                        console.log('Conexão perdida. Tentando reconectar...');
+                        this.updateStatus('offline');
+                        setTimeout(() => this.connect(), 5000);
+                    };
+                    
+                    this.ws.onerror = (error) => {
+                        console.error('Erro na conexão WebSocket:', error);
+                    };
+                } else {
+                    // Modo demonstração
+                    this.updateStatus('online');
+                }
+            }
+
+            startDataSimulation() {
+                // Simula atualizações de dados para demonstração
+                const simulatedData = {
+                    type: 'metrics_update',
+                    metrics: {
+                        conversations: { today: Math.floor(Math.random() * 50) + 20 },
+                        leads: { today: Math.floor(Math.random() * 15) + 5 },
+                        conversion_rate: Math.random() * 20 + 10,
+                        revenue: { 
+                            current_month: Math.random() * 50000 + 25000,
+                            growth_percentage: (Math.random() - 0.5) * 40
+                        },
+                        proposals: {
+                            sent_today: Math.floor(Math.random() * 8) + 2,
+                            signed_today: Math.floor(Math.random() * 3) + 1
+                        },
+                        pipeline: {
+                            draft: { count: Math.floor(Math.random() * 10) + 5 },
+                            sent: { count: Math.floor(Math.random() * 8) + 3 },
+                            viewed: { count: Math.floor(Math.random() * 6) + 2 },
+                            negotiating: { count: Math.floor(Math.random() * 4) + 1 },
+                            signed: { count: Math.floor(Math.random() * 3) + 1 }
+                        }
+                    },
+                    alerts: []
+                };
+
+                this.handleMessage(simulatedData);
+                this.updateRecentActivity();
+                
+                // Atualiza a cada 10 segundos para demonstração
+                setInterval(() => {
+                    simulatedData.metrics.conversations.today = Math.floor(Math.random() * 50) + 20;
+                    simulatedData.metrics.leads.today = Math.floor(Math.random() * 15) + 5;
+                    this.handleMessage(simulatedData);
+                }, 10000);
+            }
+
+            handleMessage(data) {
+                if (data.type === 'metrics_update') {
+                    this.updateMetrics(data.metrics);
+                    this.updateAlerts(data.alerts);
+                    this.updateCharts(data.metrics);
+                    this.updateLastUpdate();
+                }
+            }
+
+            updateMetrics(metrics) {
+                // Conversas
+                document.getElementById('conversasHoje').textContent = metrics.conversations?.today || 0;
+                document.getElementById('leadsHoje').textContent = metrics.leads?.today || 0;
+                
+                // Taxa de conversão
+                const conversao = metrics.conversion_rate || 0;
+                document.getElementById('taxaConversao').textContent = `${conversao.toFixed(1)}%`;
+                
+                // Receita
+                const receita = metrics.revenue?.current_month || 0;
+                document.getElementById('receitaMensal').textContent = this.formatCurrency(receita);
+                
+                // Crescimento da receita
+                const crescimento = metrics.revenue?.growth_percentage || 0;
+                const receitaElement = document.getElementById('receitaChange');
+                receitaElement.textContent = `${crescimento >= 0 ? '+' : ''}${crescimento.toFixed(1)}%`;
+                receitaElement.className = `metric-change ${crescimento >= 0 ? 'positive' : 'negative'}`;
+                
+                // Propostas e contratos
+                document.getElementById('propostasEnviadas').textContent = metrics.proposals?.sent_today || 0;
+                document.getElementById('contratosAssinados').textContent = metrics.proposals?.signed_today || 0;
+            }
+
+            updateAlerts(alerts) {
+                const alertsSection = document.getElementById('alertsSection');
+                const alertsList = document.getElementById('alertsList');
+                
+                if (alerts && alerts.length > 0) {
+                    alertsSection.style.display = 'block';
+                    alertsList.innerHTML = alerts.map(alert => `
+                        <div class="alert-item alert-${alert.type}">
+                            <strong>${alert.title}</strong><br>
+                            ${alert.message}
+                        </div>
+                    `).join('');
+                } else {
+                    alertsSection.style.display = 'none';
+                }
+            }
+
+            updateCharts(metrics) {
+                // Atualizar gráfico de conversas
+                if (this.charts.conversas) {
+                    // Simula dados históricos
+                    const conversasData = [20, 25, 30, 28, 35, 32, metrics.conversations?.today || 0];
+                    const leadsData = [5, 8, 10, 9, 12, 11, metrics.leads?.today || 0];
+                    
+                    this.charts.conversas.data.datasets[0].data = conversasData;
+                    this.charts.conversas.data.datasets[1].data = leadsData;
+                    this.charts.conversas.update();
+                }
+
+                // Atualizar gráfico do pipeline
+                if (this.charts.pipeline && metrics.pipeline) {
+                    const pipelineData = [
+                        metrics.pipeline.draft?.count || 0,
+                        metrics.pipeline.sent?.count || 0,
+                        metrics.pipeline.viewed?.count || 0,
+                        metrics.pipeline.negotiating?.count || 0,
+                        metrics.pipeline.signed?.count || 0
+                    ];
+                    
+                    this.charts.pipeline.data.datasets[0].data = pipelineData;
+                    this.charts.pipeline.update();
+                }
+            }
+
+            initCharts() {
+                // Gráfico de Conversas vs Leads
+                const conversasCtx = document.getElementById('conversasChart').getContext('2d');
+                this.charts.conversas = new Chart(conversasCtx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                        datasets: [{
+                            label: 'Conversas',
+                            data: [0, 0, 0, 0, 0, 0, 0],
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            tension: 0.4
+                        }, {
+                            label: 'Leads',
+                            data: [0, 0, 0, 0, 0, 0, 0],
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                // Gráfico do Pipeline
+                const pipelineCtx = document.getElementById('pipelineChart').getContext('2d');
+                this.charts.pipeline = new Chart(pipelineCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Rascunho', 'Enviadas', 'Visualizadas', 'Negociando', 'Assinadas'],
+                        datasets: [{
+                            data: [0, 0, 0, 0, 0],
+                            backgroundColor: [
+                                '#95a5a6',
+                                '#3498db',
+                                '#f39c12',
+                                '#e67e22',
+                                '#27ae60'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+            }
+
+            updateRecentActivity() {
+                const activities = [
+                    { time: '10:30', description: 'Nova conversa iniciada com lead de clínica médica' },
+                    { time: '10:15', description: 'Proposta enviada para Pet Shop Amigos' },
+                    { time: '10:00', description: 'Contrato assinado - Clínica Dra. Maria' },
+                    { time: '09:45', description: 'Follow-up automático enviado para 5 leads' },
+                    { time: '09:30', description: 'Pagamento confirmado - R$ 2.500,00' }
+                ];
+
+                const activityHTML = activities.map(activity => `
+                    <div class="activity-item">
+                        <div class="activity-time">${activity.time}</div>
+                        <div class="activity-description">${activity.description}</div>
+                    </div>
+                `).join('');
+
+                document.getElementById('recentActivity').innerHTML = activityHTML;
+            }
+
+            formatCurrency(value) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            }
+
+            updateStatus(status) {
+                const indicator = document.querySelector('.status-indicator');
+                const statusText = indicator.nextElementSibling;
+                
+                if (status === 'online') {
+                    indicator.className = 'status-indicator status-online';
+                    statusText.textContent = 'Sistema Online';
+                } else {
+                    indicator.className = 'status-indicator status-offline';
+                    statusText.textContent = 'Sistema Offline';
+                }
+            }
+
+            updateLastUpdate() {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString('pt-BR');
+                document.getElementById('lastUpdate').textContent = `Última atualização: ${timeString}`;
+            }
+        }
+
+        // Inicializa o dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            new DashboardApp();
+        });
+    </script>
+</body>
+</html>
