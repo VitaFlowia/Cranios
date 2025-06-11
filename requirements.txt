@@ -81,3 +81,5 @@ opencv-python==4.8.0.76
 
 # Utilitários assíncronos
 aiofiles==23.2.1
+
+stripe==8.5.0
