@@ -57,8 +57,7 @@ class ProposalGenerator:
         self.evolution_api_key = os.getenv('EVOLUTION_API_KEY')
         
         # Inicializar clientes
-        self.supabase: Client = create_client(self.supabase_url, self.supabase_key)
-        
+             
         # Carregar regras de pricing
         self.pricing_rules = self._load_pricing_rules()
         
