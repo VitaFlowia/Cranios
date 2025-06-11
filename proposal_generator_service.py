@@ -1,5 +1,3 @@
-01-Proposal Generator Service - Crânios
-
 """
 Proposal Generator Service - Crânios
 Gerador automático de propostas personalizadas
