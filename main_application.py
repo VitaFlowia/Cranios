@@ -1,4 +1,3 @@
-08-Main Application
 """
 Main Application - Crânios
 Orquestrador principal do sistema de automação
