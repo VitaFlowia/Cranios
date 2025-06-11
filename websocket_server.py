@@ -1,5 +1,3 @@
-21-websocket_server.py
-
 # websocket_server.py
 import asyncio
 import logging
