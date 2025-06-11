@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y \
     git \
     wkhtmltopdf \
     xvfb \
+    netcat \
     && rm -rf /var/lib/apt/lists/*
 
 # Cria diretório de trabalho
