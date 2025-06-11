@@ -1,4 +1,3 @@
-15-celery_app.py
 """
 Configuração do Celery para tarefas assíncronas
 Handles: follow-ups, pagamentos, relatórios, etc.
