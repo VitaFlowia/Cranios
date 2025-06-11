@@ -46,7 +46,9 @@ class ProposalData:
     payment_link: str
 
 class ProposalGenerator:
-    def __init__(self):
+    def __init__(self, supabase_client):
+        self.supabase = supabase_client
+
         # Configurações
         self.supabase_url = os.getenv('SUPABASE_URL')
         self.supabase_key = os.getenv('SUPABASE_ANON_KEY')
