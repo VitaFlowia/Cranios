@@ -28,12 +28,8 @@ class TaskTemplate:
     estimated_hours: int
 
 class TaskManager:
-    def __init__(self):
-        # Configurações
-        self.supabase_url = os.getenv('SUPABASE_URL')
-        self.supabase_key = os.getenv('SUPABASE_ANON_KEY')
-        self.evolution_api_url = os.getenv('EVOLUTION_API_URL')
-        self.evolution_api_key = os.getenv('EVOLUTION_API_KEY')
+    def __init__(self, supabase_client):
+        self.supabase = supabase_client
         
         # Inicializar cliente
         self.supabase: Client = create_client(self.supabase_url, self.supabase_key)
