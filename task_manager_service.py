@@ -68,7 +68,3 @@ class TaskManager:
             {"title": "Ativar comunicação", "description": "Conectar canais de WhatsApp, e-mail ou outros meios."}
         ]
 
-        report = await tm.generate_progress_report()
-        print(f"Relatório: {report}")
-    
-    # asyncio.run(test_task_manager())
