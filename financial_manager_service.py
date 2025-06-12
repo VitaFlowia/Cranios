@@ -12,6 +12,9 @@ from typing import Dict, Any
 from supabase import create_client, Client
 import aiohttp
 
+from contract_manager_service import ContractManager
+from task_manager_service import TaskManager
+
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -33,7 +36,7 @@ class FinancialManager:
             payload = {
                 "success_url": f"https://cranios.pro/success?session_id={{CHECKOUT_SESSION_ID}}",
                 "cancel_url": f"https://cranios.pro/cancel",
-                "payment_method_types": ["card", "pix"],
+                "payment_method_types": ["card", "pix", "boleto"],
                 "mode": "payment",
                 "customer_email": client_data.get("email"),
                 "line_items": [
@@ -64,7 +67,6 @@ class FinancialManager:
 
                     session_data = await response.json()
 
-                    # Salva a sessão no Supabase
                     self.supabase.table("payment_sessions").insert({
                         "id": session_data["id"],
                         "client_id": client_data["id"],
@@ -92,18 +94,12 @@ class FinancialManager:
                 phone = session["metadata"]["phone"]
                 proposal_id = session["metadata"]["proposal_id"]
 
-                # Atualiza a sessão no Supabase
                 self.supabase.table("payment_sessions").update({
                     "status": "completed",
                     "updated_at": datetime.now().isoformat()
                 }).eq("id", session_id).execute()
 
-                # Envia mensagem via Evolution
                 await self._send_payment_confirmation(phone, session.get("amount_total") / 100)
-
-                # Criar contrato + tarefas (exemplo simplificado)
-                from contract_manager_service import ContractManager
-                from task_manager_service import TaskManager
 
                 contract_manager = ContractManager(self.supabase)
                 task_manager = TaskManager(self.supabase)
@@ -122,18 +118,13 @@ class FinancialManager:
     async def _send_payment_confirmation(self, phone: str, amount: float):
         """Envia mensagem de confirmação de pagamento via WhatsApp"""
         try:
-            msg = f"✅ *Pagamento Confirmado!*\n\nRecebemos R$ {amount:.2f}. Agradecemos pela confiança na Crânios!\n\n🚀 Em breve iniciaremos a implementação do seu projeto!"
-            headers = {
-                "Content-Type": "application/json",
-                "apikey": self.evolution_api_key
-            }
-            payload = {
-                "number": phone,
-                "text": msg
-            }
+            msg = (
+                f"🎉 *Pagamento confirmado!*\n\n"
+                f"Recebemos R$ {amount:.2f} com sucesso. Obrigado por escolher a Crânios! 🙌\n\n"
+                f"Nosso time já está iniciando a próxima etapa do seu projeto. 🚀"
+            )
 
-            async with aiohttp.ClientSession() as session:
-                await session.post(f"{self.evolution_api_url}/message/sendText", json=payload, headers=headers)
+            await self._send_whatsapp_message(phone, msg)
 
         except Exception as e:
             logger.error(f"Erro ao enviar mensagem de confirmação: {str(e)}")
@@ -149,7 +140,12 @@ class FinancialManager:
                 amount = session["amount"]
                 url = f"https://buy.stripe.com/test_abc1234567890{session['id']}"
 
-                msg = f"👋 Olá! Notamos que você iniciou o pagamento, mas não finalizou.\n\n💵 *Valor:* R$ {amount:.2f}\n🔗 *Link:* {url}\n\nSe tiver dúvidas, estamos por aqui! 😊"
+                msg = (
+                    f"👋 Olá! Vimos que você iniciou o processo de pagamento, mas ainda não finalizou.\n\n"
+                    f"💰 *Valor:* R$ {amount:.2f}\n"
+                    f"🔗 *Link para finalizar:* {url}\n\n"
+                    f"Qualquer dúvida, estamos à disposição para ajudar! 😊"
+                )
 
                 await self._send_whatsapp_message(phone, msg)
 
@@ -177,4 +173,5 @@ class FinancialManager:
                 await session.post(f"{self.evolution_api_url}/message/sendText", json=payload, headers=headers)
         except Exception as e:
             logger.error(f"Erro ao enviar WhatsApp: {str(e)}")
+
 
