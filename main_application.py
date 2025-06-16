@@ -13,6 +13,15 @@ import uuid
 from fastapi import FastAPI, Request, HTTPException, BackgroundTasks
 from fastapi.responses import JSONResponse
 import uvicorn
+import sentry_sdk
+from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),
+    integrations=[FastApiIntegration()],
+    traces_sample_rate=1.0,
+    environment=os.getenv("ENVIRONMENT", "production"),
+)
 
 # Imports dos serviços
 from ai_processor_service import AIProcessor
