@@ -15,6 +15,15 @@ services:
       - ARCEE_API_KEY=${ARCEE_API_KEY}
       - GOOGLE_DRIVE_CREDENTIALS=${GOOGLE_DRIVE_CREDENTIALS}
       - AUTENTIQUE_API_KEY=${AUTENTIQUE_API_KEY}
+
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.cranios.rule=Host(`app.cranios.pro`)
+      - traefik.http.routers.cranios.entrypoints=websecure
+      - traefik.http.routers.cranios.tls=true
+      - traefik.http.routers.cranios.tls.certresolver=letsencrypt
+      - traefik.http.services.cranios.loadbalancer.server.port=8000
+      
     volumes:
       - ./app:/app
       - ./logs:/app/logs
@@ -129,24 +138,6 @@ services:
       - "6379:6379"
     volumes:
       - ./redis_data:/data
-    restart: unless-stopped
-    networks:
-      - cranios-network
-
-  # Nginx Reverse Proxy
-  nginx:
-    image: nginx:alpine
-    container_name: cranios-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
-    depends_on:
-      - cranios-app
-      - n8n
-      - evolution-api
     restart: unless-stopped
     networks:
       - cranios-network
