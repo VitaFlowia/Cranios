@@ -5,25 +5,18 @@ services:
   cranios-app:
     build: .
     container_name: cranios-main
+    # A porta 8000 foi alterada para 8001 para não conflitar com o Coolify.
     ports:
-      - "8000:8000"
+      - "8001:5678"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - EVOLUTION_API_URL=${EVOLUTION_API_URL}
+      # A URL da Evolution API agora aponta para o nome do serviço interno.
+      - EVOLUTION_API_URL=http://evolution-api:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - ARCEE_API_KEY=${ARCEE_API_KEY}
       - GOOGLE_DRIVE_CREDENTIALS=${GOOGLE_DRIVE_CREDENTIALS}
       - AUTENTIQUE_API_KEY=${AUTENTIQUE_API_KEY}
-
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.cranios.rule=Host(`app.cranios.pro`)
-      - traefik.http.routers.cranios.entrypoints=websecure
-      - traefik.http.routers.cranios.tls=true
-      - traefik.http.routers.cranios.tls.certresolver=letsencrypt
-      - traefik.http.services.cranios.loadbalancer.server.port=8000
-      
     volumes:
       - ./app:/app
       - ./logs:/app/logs
@@ -44,11 +37,12 @@ services:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
       - N8N_BASIC_AUTH_PASSWORD=${N8N_PASSWORD}
-      - N8N_HOST=0.0.0.0
+      - N8N_HOST=n8n
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
       - NODE_ENV=production
-      - WEBHOOK_URL=http://localhost:5678/
+      # A URL do webhook agora aponta para o nome do serviço interno.
+      - WEBHOOK_URL=http://n8n:5678/
       - GENERIC_TIMEZONE=America/Sao_Paulo
       - DB_TYPE=postgresdb
       - DB_POSTGRESDB_HOST=postgres
@@ -72,36 +66,20 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SERVER_URL=http://localhost:8080
+      # A URL do servidor agora aponta para o nome do serviço interno.
+      - SERVER_URL=http://evolution-api:8080
       - CORS_ORIGIN=*
       - CORS_METHODS=GET,POST,PUT,DELETE
       - CORS_CREDENTIALS=true
       - LOG_LEVEL=ERROR
-      - LOG_COLOR=true
-      - LOG_BAILEYS=error
-      - DEL_INSTANCE=false
-      - PROVIDER_ENABLED=true
-      - PROVIDER_HOST=127.0.0.1
-      - PROVIDER_PORT=5432
-      - PROVIDER_PREFIX=evolution
       - DATABASE_ENABLED=true
       - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/evolution
-      - DATABASE_CONNECTION_CLIENT_NAME=evolution_api
       - REDIS_ENABLED=true
       - REDIS_URI=redis://redis:6379
-      - REDIS_PREFIX_KEY=evolution_api
-      - RABBITMQ_ENABLED=false
-      - WEBSOCKET_ENABLED=false
-      - WEBHOOK_GLOBAL_URL=http://cranios-app:8000/webhook/whatsapp
-      - WEBHOOK_GLOBAL_ENABLED=true
-      - WEBHOOK_GLOBAL_WEBHOOK_BY_EVENTS=false
-      - CONFIG_SESSION_PHONE_CLIENT=Crânios
-      - CONFIG_SESSION_PHONE_NAME=Crânios Bot
-      - QRCODE_LIMIT=10
-      - AUTHENTICATION_TYPE=apikey
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
-      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
-      - LANGUAGE=pt-BR
+      # O webhook agora aponta para o serviço n8n.
+      - WEBHOOK_GLOBAL_URL=http://n8n:5678/webhook/whatsapp
+      - WEBHOOK_GLOBAL_ENABLED=true
     volumes:
       - ./evolution_data:/evolution/instances
       - ./evolution_store:/evolution/store
@@ -116,8 +94,9 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: cranios-postgres
-    ports:
-      - "5432:5432"
+    # A porta do Postgres não precisa ser exposta publicamente por segurança.
+    # ports:
+    #   - "5432:5432"
     environment:
       - POSTGRES_DB=cranios
       - POSTGRES_USER=${POSTGRES_USER}
@@ -134,8 +113,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: cranios-redis
-    ports:
-      - "6379:6379"
+    # A porta do Redis não precisa ser exposta publicamente por segurança.
+    # ports:
+    #   - "6379:6379"
     volumes:
       - ./redis_data:/data
     restart: unless-stopped
@@ -150,7 +130,7 @@ services:
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - EVOLUTION_API_URL=${EVOLUTION_API_URL}
+      - EVOLUTION_API_URL=http://evolution-api:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - ARCEE_API_KEY=${ARCEE_API_KEY}
       - REDIS_URL=redis://redis:6379/0
@@ -207,3 +187,4 @@ volumes:
   evolution_data:
   evolution_store:
   portainer_data:
+
