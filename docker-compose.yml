@@ -1,38 +1,51 @@
 version: '3.8'
 
+# Redes e Volumes são gerenciados pelo Docker, definidos no final.
+networks:
+  cranios-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
+  n8n_data:
+  evolution_data:
+  evolution_store:
+  portainer_data:
+
 services:
-  # Aplicação Principal Crânios
+  # 1. Aplicação Principal (Backend)
   cranios-app:
     build: .
     container_name: cranios-main
-    # Comando explícito para garantir a execução no diretório correto.
+    # CORREÇÃO DEFINITIVA: Força a execução a partir do diretório /app
     command: sh -c "cd /app && ./start.sh"
-    ports:
-      - "8091:5678"
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - cranios-network
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - EVOLUTION_API_URL=http://evolution-api:8090
+      - EVOLUTION_API_URL=http://evolution-api:8080
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - ARCEE_API_KEY=${ARCEE_API_KEY}
       - GOOGLE_DRIVE_CREDENTIALS=${GOOGLE_DRIVE_CREDENTIALS}
       - AUTENTIQUE_API_KEY=${AUTENTIQUE_API_KEY}
-    volumes:
-      - ./app:/app
-      - ./logs:/app/logs
-    depends_on:
-      - redis
-      - postgres
-    restart: unless-stopped
-    networks:
-      - cranios-network
 
-  # N8N - Automação de Workflows
+  # 2. N8N - Automação de Workflows
   n8n:
     image: n8nio/n8n:latest
     container_name: cranios-n8n
+    restart: unless-stopped
     ports:
       - "5678:5678"
+    depends_on:
+      - postgres
+    networks:
+      - cranios-network
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
@@ -49,26 +62,23 @@ services:
       - DB_POSTGRESDB_USER=${POSTGRES_USER}
       - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - ./n8n_data:/home/node/.n8n
+      - n8n_data:/home/node/.n8n
       - ./n8n_files:/files
-    depends_on:
-      - postgres
-    restart: unless-stopped
-    networks:
-      - cranios-network
 
-  # Evolution API - WhatsApp
+  # 3. Evolution API - WhatsApp
   evolution-api:
     image: atendai/evolution-api:latest
     container_name: cranios-evolution
+    restart: unless-stopped
     ports:
       - "8090:8080"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - cranios-network
     environment:
       - SERVER_URL=http://evolution-api:8080
-      - CORS_ORIGIN=*
-      - CORS_METHODS=GET,POST,PUT,DELETE
-      - CORS_CREDENTIALS=true
-      - LOG_LEVEL=ERROR
       - DATABASE_ENABLED=true
       - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/evolution
       - REDIS_ENABLED=true
@@ -77,47 +87,47 @@ services:
       - WEBHOOK_GLOBAL_URL=http://n8n:5678/webhook/whatsapp
       - WEBHOOK_GLOBAL_ENABLED=true
     volumes:
-      - ./evolution_data:/evolution/instances
-      - ./evolution_store:/evolution/store
-    depends_on:
-      - postgres
-      - redis
-    restart: unless-stopped
-    networks:
-      - cranios-network
+      - evolution_data:/evolution/instances
+      - evolution_store:/evolution/store
 
-  # PostgreSQL Database
+  # 4. Banco de Dados PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: cranios-postgres
+    restart: unless-stopped
+    networks:
+      - cranios-network
     environment:
       - POSTGRES_DB=cranios
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_MULTIPLE_DATABASES=n8n,evolution
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
       - ./init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
-    restart: unless-stopped
-    networks:
-      - cranios-network
 
-  # Redis Cache
+  # 5. Cache Redis
   redis:
     image: redis:7-alpine
     container_name: cranios-redis
-    volumes:
-      - ./redis_data:/data
     restart: unless-stopped
     networks:
       - cranios-network
+    volumes:
+      - redis_data:/data
 
-  # Celery Worker para tarefas assíncronas
+  # 6. Celery Worker
   celery-worker:
     build: .
     container_name: cranios-celery
-    # Comando explícito para garantir a execução no diretório correto.
+    # CORREÇÃO DEFINITIVA: Força a execução a partir do diretório /app
     command: sh -c "cd /app && celery -A celery_app worker --loglevel=info"
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - cranios-network
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
@@ -128,19 +138,19 @@ services:
     volumes:
       - ./app:/app
       - ./logs:/app/logs
-    depends_on:
-      - redis
-      - postgres
-    restart: unless-stopped
-    networks:
-      - cranios-network
 
-  # Celery Beat para tarefas agendadas
+  # 7. Celery Beat
   celery-beat:
     build: .
     container_name: cranios-beat
-    # Comando explícito para garantir a execução no diretório correto.
+    # CORREÇÃO DEFINITIVA: Força a execução a partir do diretório /app
     command: sh -c "cd /app && celery -A celery_app beat --loglevel=info"
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - cranios-network
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
@@ -148,35 +158,17 @@ services:
     volumes:
       - ./app:/app
       - ./logs:/app/logs
-    depends_on:
-      - redis
-      - postgres
-    restart: unless-stopped
-    networks:
-      - cranios-network
 
-  # Portainer para gerenciamento
+  # 8. Portainer (Gerenciador )
   portainer:
     image: portainer/portainer-ce:latest
     container_name: cranios-portainer
+    restart: unless-stopped
     ports:
       - "9000:9000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./portainer_data:/data
-    restart: unless-stopped
+      - portainer_data:/data
     networks:
       - cranios-network
-
-networks:
-  cranios-network:
-    driver: bridge
-
-volumes:
-  postgres_data:
-  redis_data:
-  n8n_data:
-  evolution_data:
-  evolution_store:
-  portainer_data:
 
