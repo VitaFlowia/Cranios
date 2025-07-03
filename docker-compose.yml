@@ -5,14 +5,14 @@ services:
   cranios-app:
     build: .
     container_name: cranios-main
-    working_dir: /app  # <-- CORREÇÃO CRÍTICA
+    # Comando explícito para garantir a execução no diretório correto.
+    command: sh -c "cd /app && ./start.sh"
     ports:
       - "8091:5678"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      # A URL da Evolution API agora aponta para o nome do serviço interno.
-      - EVOLUTION_API_URL=http://evolution-api:8080
+      - EVOLUTION_API_URL=http://evolution-api:8090
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - ARCEE_API_KEY=${ARCEE_API_KEY}
       - GOOGLE_DRIVE_CREDENTIALS=${GOOGLE_DRIVE_CREDENTIALS}
@@ -40,7 +40,6 @@ services:
       - N8N_HOST=n8n
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      # A URL do webhook agora aponta para o nome do serviço interno.
       - WEBHOOK_URL=http://n8n:5678/
       - GENERIC_TIMEZONE=America/Sao_Paulo
       - DB_TYPE=postgresdb
@@ -117,8 +116,8 @@ services:
   celery-worker:
     build: .
     container_name: cranios-celery
-    working_dir: /app  # <-- CORREÇÃO CRÍTICA
-    command: celery -A celery_app worker --loglevel=info
+    # Comando explícito para garantir a execução no diretório correto.
+    command: sh -c "cd /app && celery -A celery_app worker --loglevel=info"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
@@ -140,8 +139,8 @@ services:
   celery-beat:
     build: .
     container_name: cranios-beat
-    working_dir: /app  # <-- CORREÇÃO CRÍTICA
-    command: celery -A celery_app beat --loglevel=info
+    # Comando explícito para garantir a execução no diretório correto.
+    command: sh -c "cd /app && celery -A celery_app beat --loglevel=info"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
@@ -180,3 +179,4 @@ volumes:
   evolution_data:
   evolution_store:
   portainer_data:
+
