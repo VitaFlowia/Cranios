@@ -1,6 +1,5 @@
 version: '3.8'
 
-# Redes e Volumes são gerenciados pelo Docker, definidos no final.
 networks:
   cranios-network:
     driver: bridge
@@ -18,7 +17,6 @@ services:
   cranios-app:
     build: .
     container_name: cranios-main
-    # CORREÇÃO DEFINITIVA: Força a execução a partir do diretório /app
     command: sh -c "cd /app && ./start.sh"
     restart: unless-stopped
     depends_on:
@@ -26,6 +24,11 @@ services:
       - postgres
     networks:
       - cranios-network
+    # CORREÇÃO FINAL: Instrução explícita para o proxy Coolify (Traefik)
+    # Diz ao proxy para direcionar o tráfego para a porta 5678 interna.
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.cranios-app.loadbalancer.server.port=5678"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
@@ -34,6 +37,9 @@ services:
       - ARCEE_API_KEY=${ARCEE_API_KEY}
       - GOOGLE_DRIVE_CREDENTIALS=${GOOGLE_DRIVE_CREDENTIALS}
       - AUTENTIQUE_API_KEY=${AUTENTIQUE_API_KEY}
+    volumes:
+      - ./app:/app
+      - ./logs:/app/logs
 
   # 2. N8N - Automação de Workflows
   n8n:
@@ -120,7 +126,6 @@ services:
   celery-worker:
     build: .
     container_name: cranios-celery
-    # CORREÇÃO DEFINITIVA: Força a execução a partir do diretório /app
     command: sh -c "cd /app && celery -A celery_app worker --loglevel=info"
     restart: unless-stopped
     depends_on:
@@ -143,7 +148,6 @@ services:
   celery-beat:
     build: .
     container_name: cranios-beat
-    # CORREÇÃO DEFINITIVA: Força a execução a partir do diretório /app
     command: sh -c "cd /app && celery -A celery_app beat --loglevel=info"
     restart: unless-stopped
     depends_on:
@@ -171,4 +175,3 @@ services:
       - portainer_data:/data
     networks:
       - cranios-network
-
