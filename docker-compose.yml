@@ -1,8 +1,7 @@
 version: '3.8'
 
-networks:
-  cranios-network:
-    driver: bridge
+# Removida a definição de rede customizada 'cranios-network'
+# O Docker Compose criará uma rede padrão onde todos os serviços se verão.
 
 volumes:
   postgres_data:
@@ -22,17 +21,16 @@ services:
     depends_on:
       - redis
       - postgres
-    networks:
-      - cranios-network
-    # CORREÇÃO FINAL: Instrução explícita para o proxy Coolify (Traefik)
-    # Diz ao proxy para direcionar o tráfego para a porta 5678 interna.
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
+    # Adicionada a label para o Traefik apontar para a porta correta.
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.cranios-app.loadbalancer.server.port=5678"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - EVOLUTION_API_URL=http://evolution-api:8080
+      # A URL da Evolution API agora aponta para localhost na porta exposta.
+      - EVOLUTION_API_URL=http://localhost:8090
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - ARCEE_API_KEY=${ARCEE_API_KEY}
       - GOOGLE_DRIVE_CREDENTIALS=${GOOGLE_DRIVE_CREDENTIALS}
@@ -50,8 +48,7 @@ services:
       - "5678:5678"
     depends_on:
       - postgres
-    networks:
-      - cranios-network
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
     environment:
       - N8N_BASIC_AUTH_ACTIVE=true
       - N8N_BASIC_AUTH_USER=admin
@@ -59,9 +56,11 @@ services:
       - N8N_HOST=n8n
       - N8N_PORT=5678
       - N8N_PROTOCOL=http
-      - WEBHOOK_URL=http://n8n:5678/
+      # A URL do webhook agora aponta para localhost na porta exposta.
+      - WEBHOOK_URL=http://localhost:5678/
       - GENERIC_TIMEZONE=America/Sao_Paulo
       - DB_TYPE=postgresdb
+      # O host do banco de dados agora aponta para o nome do serviço.
       - DB_POSTGRESDB_HOST=postgres
       - DB_POSTGRESDB_PORT=5432
       - DB_POSTGRESDB_DATABASE=n8n
@@ -81,16 +80,23 @@ services:
     depends_on:
       - postgres
       - redis
-    networks:
-      - cranios-network
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
     environment:
-      - SERVER_URL=http://evolution-api:8080
+      # A URL do servidor agora aponta para localhost na porta exposta.
+      - SERVER_URL=http://localhost:8090
+      - CORS_ORIGIN=*
+      - CORS_METHODS=GET,POST,PUT,DELETE
+      - CORS_CREDENTIALS=true
+      - LOG_LEVEL=ERROR
       - DATABASE_ENABLED=true
+      # A URL do banco de dados agora aponta para o nome do serviço.
       - DATABASE_CONNECTION_URI=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/evolution
       - REDIS_ENABLED=true
+      # A URL do Redis agora aponta para o nome do serviço.
       - REDIS_URI=redis://redis:6379
       - AUTHENTICATION_API_KEY=${EVOLUTION_API_KEY}
-      - WEBHOOK_GLOBAL_URL=http://n8n:5678/webhook/whatsapp
+      # A URL do webhook global agora aponta para localhost na porta exposta do N8N.
+      - WEBHOOK_GLOBAL_URL=http://localhost:5678/webhook/whatsapp
       - WEBHOOK_GLOBAL_ENABLED=true
     volumes:
       - evolution_data:/evolution/instances
@@ -101,8 +107,7 @@ services:
     image: postgres:15-alpine
     container_name: cranios-postgres
     restart: unless-stopped
-    networks:
-      - cranios-network
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
     environment:
       - POSTGRES_DB=cranios
       - POSTGRES_USER=${POSTGRES_USER}
@@ -117,8 +122,7 @@ services:
     image: redis:7-alpine
     container_name: cranios-redis
     restart: unless-stopped
-    networks:
-      - cranios-network
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
     volumes:
       - redis_data:/data
 
@@ -131,15 +135,16 @@ services:
     depends_on:
       - redis
       - postgres
-    networks:
-      - cranios-network
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - EVOLUTION_API_URL=http://evolution-api:8080
+      # A URL da Evolution API agora aponta para localhost na porta exposta.
+      - EVOLUTION_API_URL=http://localhost:8090
       - EVOLUTION_API_KEY=${EVOLUTION_API_KEY}
       - ARCEE_API_KEY=${ARCEE_API_KEY}
-      - REDIS_URL=redis://redis:6379/0
+      # A URL do Redis agora aponta para localhost na porta exposta.
+      - REDIS_URL=redis://localhost:6379/0
     volumes:
       - ./app:/app
       - ./logs:/app/logs
@@ -153,12 +158,12 @@ services:
     depends_on:
       - redis
       - postgres
-    networks:
-      - cranios-network
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
-      - REDIS_URL=redis://redis:6379/0
+      # A URL do Redis agora aponta para localhost na porta exposta.
+      - REDIS_URL=redis://localhost:6379/0
     volumes:
       - ./app:/app
       - ./logs:/app/logs
@@ -173,5 +178,5 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - portainer_data:/data
-    networks:
-      - cranios-network
+    # Removida a rede customizada. Usará a rede padrão do Docker Compose.
+
