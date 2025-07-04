@@ -153,7 +153,8 @@ services:
   celery-beat:
     build: .
     container_name: cranios-beat
-    command: sh -c "cd /app && celery -A celery_app beat --loglevel=info"
+    command: sh -c "cd /app && celery -A celery_app worker --loglevel=info"
+             sh -c "cd /app && celery -A celery_app beat --loglevel=info"
     restart: unless-stopped
     depends_on:
       - redis
