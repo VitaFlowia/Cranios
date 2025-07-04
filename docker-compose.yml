@@ -25,7 +25,7 @@ services:
     # Adicionada a label para o Traefik apontar para a porta correta.
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.cranios-app.loadbalancer.server.port=5678"
+      - "traefik.http.services.cranios-app.loadbalancer.server.port=8888"
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_KEY=${SUPABASE_KEY}
