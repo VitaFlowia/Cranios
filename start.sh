@@ -16,3 +16,5 @@ exec gunicorn main_application:app \
 --bind 0.0.0.0:5678 \
 --timeout 120 \
 --log-level info
+
+exit 0
