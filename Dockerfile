@@ -43,4 +43,4 @@ RUN chmod +x /app/start.sh
 # Expõe porta
 
 # Comando de inicialização
-CMD ["./start.sh"]
+CMD ["sh", "/app/start.sh"]
