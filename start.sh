@@ -13,7 +13,7 @@ echo "🚀 Iniciando servidor FastAPI..."
 exec gunicorn main_application:app \
 --workers 1 \
 --worker-class uvicorn.workers.UvicornWorker \
---bind 0.0.0.0:5678 \
+--bind 0.0.0.0:8888 \
 --timeout 120 \
 --log-level info
 
