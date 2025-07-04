@@ -41,7 +41,6 @@ RUN mkdir -p /app/logs /app/temp /app/uploads
 RUN chmod +x /app/start.sh
 
 # Expõe porta
-EXPOSE 5678
 
 # Comando de inicialização
 CMD ["./start.sh"]
